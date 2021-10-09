@@ -155,9 +155,10 @@ const generateHtmlTable = (columns, flattenCurrArray, flattenPreArray) => {
   columns.forEach(column => {
     htmlTable += `<th data-column=${column}>${column}</th>`
   })
-  htmlTable += `</tr><tr>`
+  htmlTable += `</tr>`
   // Add rows to the table for each value in flattenCurrArray
   flattenCurrArray.forEach(rowValue => {
+    htmlTable += `<tr>`
     columns.forEach(key => {
       let changedProperties = getDiff(flattenPreArray, flattenCurrArray)
       let changedVal = changedProperties.some(changedProperty => {
