@@ -28,8 +28,8 @@
 
 module.exports.arrayDiffToHtmlTable = function (prevArray, currArray) {
   // flattens the objects inside of prevArray and currArray
-  const flattenPreArray = prevArray.map(obj => flattenObject(obj))
-  const flattenCurrArray = currArray.map(obj => flattenObject(obj))
+  const flattenPreArray = sortAndFlatten(prevArray)
+  const flattenCurrArray = sortAndFlatten(currArray)
   // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
   const columns = getTableColumnValues(flattenCurrArray)
   const htmlTable = generateHtmlTable(
@@ -54,6 +54,19 @@ const timed = f => {
         `Leaving function ${f.name} in ${Date.now() - startTime} milliseconds`
       )
     }
+  }
+}
+
+// For performance reasons, we want to sort the objects in the array by their _id
+const sortAndFlatten = (target) => {
+  // sort the array by _id
+  // flatten the objects
+  if (Array.isArray(target) && target.length > 0) {
+    return target
+      .sort((a, b) => a._id - b._id)
+      .map(obj => flattenObject(obj))
+  } else {
+    return target
   }
 }
 
@@ -216,14 +229,14 @@ const generateColorTable = () => {
 }
 
 // Uncomment to use to test implementation a timer to see how long it takes to run
-// timed(module.exports.arrayDiffToHtmlTable)(
-//   [{ _id: 1, someKey: 'RINGING', meta: { subKey1: 1234, subKey2: 52 } }],
-//   [
-//     { _id: 1, someKey: 'HANGUP', meta: { subKey1: 1234 } },
-//     {
-//       _id: 2,
-//       someKey: 'RINGING',
-//       meta: { subKey1: 5678, subKey2: 207, subKey3: 52 }
-//     }
-//   ]
-// )
+timed(module.exports.arrayDiffToHtmlTable)(
+  [{ _id: 1, someKey: 'RINGING', meta: { subKey1: 1234, subKey2: 52 } }],
+  [
+    { _id: 1, someKey: 'HANGUP', meta: { subKey1: 1234 } },
+    {
+      _id: 2,
+      someKey: 'RINGING',
+      meta: { subKey1: 5678, subKey2: 207, subKey3: 52 }
+    }
+  ]
+)
