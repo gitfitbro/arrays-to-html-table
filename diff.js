@@ -58,13 +58,11 @@ const timed = f => {
 }
 
 // For performance reasons, we want to sort the objects in the array by their _id
-const sortAndFlatten = (target) => {
+const sortAndFlatten = target => {
   // sort the array by _id
   // flatten the objects
   if (Array.isArray(target) && target.length > 0) {
-    return target
-      .sort((a, b) => a._id - b._id)
-      .map(obj => flattenObject(obj))
+    return target.sort((a, b) => a._id - b._id).map(obj => flattenObject(obj))
   } else {
     return target
   }
@@ -73,17 +71,13 @@ const sortAndFlatten = (target) => {
 const flattenObject = (obj, keySeparator = '.', prefix = '') => {
   const flattenRecursive = (obj, parentProperty = '', propertyMap = {}) => {
     for (const [key, value] of Object.entries(obj)) {
-      const property = parentProperty.length ? parentProperty + keySeparator + key : key
+      const property = parentProperty.length
+        ? parentProperty + keySeparator + key
+        : key
       if (value && typeof value === 'object') {
-        flattenRecursive(
-          value,
-          property,
-          propertyMap
-        )
+        flattenRecursive(value, property, propertyMap)
       } else {
-        propertyMap[
-          property
-        ] = value
+        propertyMap[property] = value
       }
     }
     return propertyMap
@@ -145,46 +139,58 @@ const isChangedValue = (prevArray, currArray, keyValue, id) => {
 }
 
 const generateHtmlTable = (columns, flattenCurrArray, flattenPreArray) => {
-  let htmlTable = `
-  ${generateColorTable()}
-  <br>
-  <table style="width:100%"><tr>`
-  // Loop through the columns and update the table
-  columns.forEach(column => {
-    htmlTable += `<th data-column=${column}>${column}</th>`
-  })
-  htmlTable += `</tr>`
-  // Add rows to the table for each value in flattenCurrArray
-  flattenCurrArray.forEach(rowValue => {
-    htmlTable += `<tr>`
-    columns.forEach(key => {
-      let keyChangeMeta = isChangedValue(
-        flattenPreArray,
-        flattenCurrArray,
-        key,
-        rowValue._id
-      )
-      let keyChange =
-        keyChangeMeta.changed || keyChangeMeta.added || keyChangeMeta.deleted
-      if (keyChange) {
-        htmlTable += `<td style="background-color: ${getColor(
-          keyChangeMeta
-        )}; font-weight: bold;">${
-          keyChangeMeta.deleted || !rowValue?.[key] ? 'DELETED' : rowValue[key]
-        }</td>`
-      } else {
-        htmlTable += `<td style="background-color: ${getColor(
-          keyChangeMeta
-        )};">${
-          keyChangeMeta.deleted || !rowValue?.[key] ? 'DELETED' : rowValue[key]
-        }</td>`
-      }
-    })
+  const rows = generateRows(flattenPreArray, flattenCurrArray, columns)
+  const styledRows = generateTableRows(rows, columns)
 
+  let htmlTable = `
+    ${generateColorTable()}
+    <br>
+    <table style="width:100%"> 
+      ${generateTableHeader(columns)}
+      ${styledRows} 
+    </table>`
+  return htmlTable
+}
+
+const generateTableRows = (rows, columns) => {
+  let htmlTable = ``
+  rows.forEach(row => {
+    htmlTable += `<tr>`
+    columns.forEach(column => {
+      let cell = row[column]
+      let isCellChanged =
+        cell.changes.added || cell.changes.deleted || cell.changes.changed
+      htmlTable += `<td style="font-weight: ${
+        isCellChanged ? 'bold' : 'normal'
+      }; background-color: ${getColor(cell.changes)}">${cell.value}</td>`
+    })
     htmlTable += `</tr>`
   })
-  htmlTable += `</table>`
   return htmlTable
+}
+
+generateTableHeader = (columns) => {
+  let htmlTableCols = `<tr>`
+  columns.forEach(column => {
+    htmlTableCols += `<th data-column=${column}>${column}</th>`
+  })
+  htmlTableCols += `</tr>`
+  return htmlTableCols
+}
+
+const generateRows = (source, target, columns) => {
+  let rows = []
+  target.forEach(data => {
+    let row = {}
+    columns.forEach(column => {
+      row[column] = {
+        value: !data?.[column] ? 'DELETED' : data[column],
+        changes: isChangedValue(source, target, column, data._id)
+      }
+    })
+    rows.push(row)
+  })
+  return rows
 }
 
 const getColor = meta => {
