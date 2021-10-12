@@ -1,0 +1,27 @@
+{
+  "name": "arrays-to-html-table",
+  "version": "1.0.0",
+  "description": "Given two arrays of nested object, a table is generated to show the changes from the first array to the second array",
+  "main": "diff.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node diff.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gitfitbro/arrays-to-html-table.git"
+  },
+  "keywords": [
+    "html",
+    "table",
+    "flatten",
+    "sirrele",
+    "gitfitcode"
+  ],
+  "author": "Sirrele Steinfeld",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gitfitbro/arrays-to-html-table/issues"
+  },
+  "homepage": "https://github.com/gitfitbro/arrays-to-html-table#readme"
+}
