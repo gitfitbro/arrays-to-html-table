@@ -7,11 +7,10 @@
 * [x] TODO: Move most of these comments to a README.md file
 * [x] TODO: Create a Set of _ids for currArray and PrevArray
 * [x] TODO: Use the Set() and Map() Classes
+* [x] TODO: Beautify the html
+* [x] TODO: Create a file with the resulting html
 * [ ] TODO: Test large arrays (e.g. > 10,000)
 * [ ] TODO: Add Unit Tests
-* [ ] TODO: Beautify the html
-* [ ] TODO: Create a file with the resulting html
-* [ ] TODO: Automatically open the generated html file
 
 ---
 
