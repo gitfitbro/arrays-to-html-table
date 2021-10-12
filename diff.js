@@ -3,8 +3,9 @@
  * @param {Array} prevArray
  * @param {Array} currArray
  * @returns {String} htmlTable
- * TODO: Move most of these comments to a README.md file
- *
+ * [] TODO: Move most of these comments to a README.md file
+ * [x] TODO: Create a Set of _ids for currArray and PrevArray
+ * [x] TODO: Use the Set() and Map() Classes
  * The function will take two arguments
  * [x] (prevArray, currArray)
  * [x] flattens the objects inside of prevArray and currArray to 1 level of depth,
@@ -13,7 +14,7 @@
  * HTML Table
  * [x] The HTML table you return has a column header which is a superset of all keys in all the objects in the currArray.
  * [x] Any values that have changed from the prevArray to the currArray (ie field value changed or is a new key altogether) should be bolded
- * [] In the case that the value has been removed altogether from the prevArray to the currArray, you will write out the key in bold DELETED.
+ * [x] In the case that the value has been removed altogether from the prevArray to the currArray, you will write out the key in bold DELETED.
  *
  * RULES:
  * The arrays are arbitrarily deep
@@ -28,15 +29,19 @@
 
 module.exports.arrayDiffToHtmlTable = function (prevArray, currArray) {
   // flattens the objects inside of prevArray and currArray
-  const flattenPreArray = sortAndFlatten(prevArray)
-  const flattenCurrArray = sortAndFlatten(currArray)
-  // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
-  const columns = getTableColumnValues(flattenCurrArray)
-  const htmlTable = generateHtmlTable(
-    columns,
-    flattenCurrArray,
-    flattenPreArray
+  const flattenPreArray = flattenArray(prevArray)
+  const flattenCurrArray = flattenArray(currArray)
+  const prevMap = new Map(
+    flattenPreArray.map(object => [object._id, object])
   )
+  const currentMap = new Map(
+    flattenCurrArray.map(object => [object._id, object])
+  )
+  // We want to have distinct set of ids that are used in both arrays
+  const ids = new Set([...prevMap.keys(), ...currentMap.keys()])
+  // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
+  const columns = getTableColumnValues([...currentMap.values()])
+  const htmlTable = generateHtmlTable(columns, currentMap, prevMap, ids)
   // Return HTML Table of flattened objects values
   console.log('htmlTable: ', htmlTable)
   return htmlTable
@@ -56,13 +61,11 @@ const timed = f => {
     }
   }
 }
-
-// For performance reasons, we want to sort the objects in the array by their _id
-const sortAndFlatten = target => {
-  // sort the array by _id
+// Since we have a map, we do not need to worry about ordering
+const flattenArray = target => {
   // flatten the objects
   if (Array.isArray(target) && target.length > 0) {
-    return target.sort((a, b) => a._id - b._id).map(obj => flattenObject(obj))
+    return target.map(obj => flattenObject(obj))
   } else {
     return target
   }
@@ -113,10 +116,9 @@ const isChangedValue = (prevArray, currArray, keyValue, id) => {
     added: false
   }
   if (keyValue) {
-    // find the object in the currArray with the matching id
-    const currObj = currArray.find(obj => obj['_id'] === id)
-    // find the object in the prevArray with the matching id
-    const prevObj = prevArray.find(obj => obj['_id'] === id)
+    // find the object in the maps by id
+    const currObj = currArray.get(id)
+    const prevObj = prevArray.get(id)
     // if the object is found in the currArray, check if the value has changed
     if (currObj && prevObj) {
       const currValue = currObj[keyValue]
@@ -138,8 +140,8 @@ const isChangedValue = (prevArray, currArray, keyValue, id) => {
   return isChanged
 }
 
-const generateHtmlTable = (columns, flattenCurrArray, flattenPreArray) => {
-  const rows = generateRows(flattenPreArray, flattenCurrArray, columns)
+const generateHtmlTable = (columns, flattenCurrArray, flattenPreArray, ids) => {
+  const rows = generateRows(flattenPreArray, flattenCurrArray, columns, ids)
   const styledRows = generateTableRows(rows, columns)
 
   let htmlTable = `
@@ -169,7 +171,7 @@ const generateTableRows = (rows, columns) => {
   return htmlTable
 }
 
-generateTableHeader = (columns) => {
+generateTableHeader = columns => {
   let htmlTableCols = `<tr>`
   columns.forEach(column => {
     htmlTableCols += `<th data-column=${column}>${column}</th>`
@@ -178,14 +180,14 @@ generateTableHeader = (columns) => {
   return htmlTableCols
 }
 
-const generateRows = (source, target, columns) => {
+const generateRows = (source, target, columns, ids) => {
   let rows = []
-  target.forEach(data => {
+  ids.forEach(id => {
     let row = {}
     columns.forEach(column => {
       row[column] = {
-        value: !data?.[column] ? 'DELETED' : data[column],
-        changes: isChangedValue(source, target, column, data._id)
+        value: !target.get(id)?.[column] ? 'DELETED' : target.get(id)[column],
+        changes: isChangedValue(source, target, column, id)
       }
     })
     rows.push(row)
