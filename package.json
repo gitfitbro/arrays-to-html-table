@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/gitfitbro/arrays-to-html-table/issues"
   },
-  "homepage": "https://github.com/gitfitbro/arrays-to-html-table#readme"
+  "homepage": "https://github.com/gitfitbro/arrays-to-html-table#readme",
+  "dependencies": {
+    "js-beautify": "^1.14.0"
+  }
 }

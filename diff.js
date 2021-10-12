@@ -1,3 +1,4 @@
+const beautify = require('js-beautify')
 /**
  * @function arrayDiffToHtmlTable
  * @param {Array} prevArray
@@ -20,9 +21,13 @@ module.exports.arrayDiffToHtmlTable = function (prevArray, currArray) {
   // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
   const columns = getTableColumnValues([...currentMap.values()])
   const htmlTable = generateHtmlTable(columns, currentMap, prevMap, ids)
-  // Return HTML Table of flattened objects values
-  console.log('htmlTable: ', htmlTable)
-  return htmlTable
+  // Return formatted HTML Table of flattened objects values
+  const formattedHtml = beautify.html(htmlTable, {
+    indent_size: 2,
+    max_preserve_newlines: 1
+  })
+  console.log('htmlTable: \n\n', formattedHtml)
+  return formattedHtml
 }
 
 const timed = f => {
