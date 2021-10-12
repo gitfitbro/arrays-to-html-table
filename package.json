@@ -5,7 +5,8 @@
   "main": "diff.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node diff.js"
+    "start": "node diff.js",
+    "generate:html": "node diff.js > ./index.html"
   },
   "repository": {
     "type": "git",

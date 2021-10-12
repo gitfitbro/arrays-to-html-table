@@ -10,9 +10,7 @@ module.exports.arrayDiffToHtmlTable = function (prevArray, currArray) {
   // flattens the objects inside of prevArray and currArray
   const flattenPreArray = flattenArray(prevArray)
   const flattenCurrArray = flattenArray(currArray)
-  const prevMap = new Map(
-    flattenPreArray.map(object => [object._id, object])
-  )
+  const prevMap = new Map(flattenPreArray.map(object => [object._id, object]))
   const currentMap = new Map(
     flattenCurrArray.map(object => [object._id, object])
   )
@@ -22,12 +20,8 @@ module.exports.arrayDiffToHtmlTable = function (prevArray, currArray) {
   const columns = getTableColumnValues([...currentMap.values()])
   const htmlTable = generateHtmlTable(columns, currentMap, prevMap, ids)
   // Return formatted HTML Table of flattened objects values
-  const formattedHtml = beautify.html(htmlTable, {
-    indent_size: 2,
-    max_preserve_newlines: 1
-  })
-  console.log('htmlTable: \n\n', formattedHtml)
-  return formattedHtml
+
+  return htmlTable
 }
 
 const timed = f => {
@@ -127,14 +121,49 @@ const generateHtmlTable = (columns, flattenCurrArray, flattenPreArray, ids) => {
   const rows = generateRows(flattenPreArray, flattenCurrArray, columns, ids)
   const styledRows = generateTableRows(rows, columns)
 
-  let htmlTable = `
+  const htmlTable = `
     ${generateColorTable()}
     <br>
     <table style="width:100%"> 
       ${generateTableHeader(columns)}
       ${styledRows} 
     </table>`
-  return htmlTable
+  // Format the HTML Table
+  return buildHtml(htmlTable)
+}
+
+const buildHtml = table => {
+  const header = 
+    `<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Flattened Arrays To Table</title>
+      <style>
+        body {
+          width:50%; 
+          margin: 0 auto; 
+          padding: 50px;
+        }
+        table, th, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+        }
+      </style>
+    </head>`
+    
+  const html = 
+    '<!DOCTYPE html>' +
+    '<html><head>' +
+    header +
+    '</head><body>' +
+    table +
+    '</body></html>'
+  const formattedHtml = beautify.html(html, {
+    indent_size: 2,
+    max_preserve_newlines: 1
+  })
+  console.log(formattedHtml)
+  return formattedHtml
 }
 
 const generateTableRows = (rows, columns) => {
@@ -220,7 +249,19 @@ const generateColorTable = () => {
 }
 
 // Uncomment to use to test implementation a timer to see how long it takes to run
-timed(module.exports.arrayDiffToHtmlTable)(
+// timed(module.exports.arrayDiffToHtmlTable)(
+//   [{ _id: 1, someKey: 'RINGING', meta: { subKey1: 1234, subKey2: 52 } }],
+//   [
+//     { _id: 1, someKey: 'HANGUP', meta: { subKey1: 1234 } },
+//     {
+//       _id: 2,
+//       someKey: 'RINGING',
+//       meta: { subKey1: 5678, subKey2: 207, subKey3: 52 }
+//     }
+//   ]
+// )
+
+module.exports.arrayDiffToHtmlTable(
   [{ _id: 1, someKey: 'RINGING', meta: { subKey1: 1234, subKey2: 52 } }],
   [
     { _id: 1, someKey: 'HANGUP', meta: { subKey1: 1234 } },
