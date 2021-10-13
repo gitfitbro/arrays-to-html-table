@@ -198,7 +198,9 @@ const generateRows = (source, target, columns, ids) => {
     let row = {}
     columns.forEach(column => {
       row[column] = {
-        value: !target.get(id)?.[column] ? 'DELETED' : target.get(id)[column],
+        value: !target.get(id)?.[column] 
+          ? column !== '_id' ? 'DELETED': id
+          : target.get(id)[column],
         changes: isChangedValue(source, target, column, id)
       }
     })
@@ -264,7 +266,7 @@ const generateColorTable = () => {
 module.exports.arrayDiffToHtmlTable(
   [{ _id: 1, someKey: 'RINGING', meta: { subKey1: 1234, subKey2: 52 } }],
   [
-    { _id: 1, someKey: 'HANGUP', meta: { subKey1: 1234 } },
+    // { _id: 1, someKey: 'HANGUP', meta: { subKey1: 1234 } },
     {
       _id: 2,
       someKey: 'RINGING',

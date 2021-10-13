@@ -9,8 +9,10 @@
 * [x] TODO: Use the Set() and Map() Classes
 * [x] TODO: Beautify the html
 * [x] TODO: Create a file with the resulting html
+* [x] TODO: Updated table generation to include the id of a row that was delete completely
 * [ ] TODO: Test large arrays (e.g. > 10,000)
 * [ ] TODO: Add Unit Tests
+* [ ] TODO: Split HTML function into separate module
 
 ---
 
