@@ -13,9 +13,10 @@
 * [ ] TODO: Test large arrays (e.g. > 10,000)
 * [ ] TODO: Add Unit Tests
 * [ ] TODO: Split HTML function into separate module
-* [ ] TODO: Export as csv
+* [x] TODO: Export as csv
 * [ ] TODO: Export as JSON
 * [ ] TODO: Export as PDF
+* [x] TODO: Refactor in a class
 
 ---
 
