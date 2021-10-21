@@ -18,7 +18,9 @@ const arrayDiffToHtmlTable = (prevArray, currArray) => {
   const ids = new Set([...prevMap.keys(), ...currentMap.keys()])
   // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
   const columns = getTableColumnValues([...currentMap.values()])
-  const htmlTable = generateHtmlTable(columns, currentMap, prevMap, ids)
+  const rows = generateRows(prevMap, currentMap, columns, ids)
+
+  const htmlTable = generateHtmlTable(columns, rows, ids)
   // Return formatted HTML Table of flattened objects values
 
   return htmlTable
@@ -117,8 +119,7 @@ const isChangedValue = (prevArray, currArray, keyValue, id) => {
   return isChanged
 }
 
-const generateHtmlTable = (columns, flattenCurrArray, flattenPreArray, ids) => {
-  const rows = generateRows(flattenPreArray, flattenCurrArray, columns, ids)
+const generateHtmlTable = (columns, rows, ids) => {
   const styledRows = generateTableRows(rows, columns)
 
   const htmlTable = `
