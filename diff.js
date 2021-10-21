@@ -8,22 +8,37 @@ const beautify = require('js-beautify')
 
 const arrayDiffToHtmlTable = (prevArray, currArray) => {
   // flattens the objects inside of prevArray and currArray
-  const flattenPreArray = flattenArray(prevArray)
-  const flattenCurrArray = flattenArray(currArray)
-  const prevMap = new Map(flattenPreArray.map(object => [object._id, object]))
-  const currentMap = new Map(
-    flattenCurrArray.map(object => [object._id, object])
-  )
-  // We want to have distinct set of ids that are used in both arrays
-  const ids = new Set([...prevMap.keys(), ...currentMap.keys()])
-  // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
-  const columns = getTableColumnValues([...currentMap.values()])
-  const rows = generateRows(prevMap, currentMap, columns, ids)
+  const prevMap = prevArray.length > 0 ? getFlattenedMap(prevArray) : {}
+  const currentMap = currArray.length > 0 ? getFlattenedMap(currArray) : {}
 
+  const { ids, columns, rows } = getDiffMetadata(prevMap, currentMap)
   const htmlTable = generateHtmlTable(columns, rows, ids)
   // Return formatted HTML Table of flattened objects values
-
   return htmlTable
+}
+
+const getDiffMetadata = (source, target) => { 
+    // We want to have distinct set of ids that are used in both arrays
+  const ids = getDistinctIds(source, target)
+  // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
+  const columns = getTableColumnValues([...target.values()])
+  const rows = generateRows(source, target, columns, ids)
+  return {
+    ids,    
+    columns, 
+    rows
+  }
+}
+
+const getDistinctIds = (source, target) => {
+  const ids = new Set([...source.keys(), ...target.keys()])
+  return ids
+}
+
+const getFlattenedMap = (arr) => { 
+  const flattenedArray = flattenArray(arr)
+  const map = new Map(flattenedArray.map(object => [object._id, object]))
+  return map
 }
 
 const timed = f => {
