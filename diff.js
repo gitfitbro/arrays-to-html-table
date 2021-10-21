@@ -1,4 +1,5 @@
 const beautify = require('js-beautify')
+const buff = require('buffer')
 /**
  * @function arrayDiffToHtmlTable
  * @param {Array} prevArray
@@ -7,25 +8,43 @@ const beautify = require('js-beautify')
  **/
 
 const arrayDiffToHtmlTable = (prevArray, currArray) => {
-  // flattens the objects inside of prevArray and currArray
-  const prevMap = prevArray.length > 0 ? getFlattenedMap(prevArray) : {}
-  const currentMap = currArray.length > 0 ? getFlattenedMap(currArray) : {}
-
-  const { ids, columns, rows } = getDiffMetadata(prevMap, currentMap)
+  const { ids, columns, rows } = getDiffMetadata(prevArray, currArray)
   const htmlTable = generateHtmlTable(columns, rows, ids)
   // Return formatted HTML Table of flattened objects values
   return htmlTable
 }
 
-const getDiffMetadata = (source, target) => { 
-    // We want to have distinct set of ids that are used in both arrays
-  const ids = getDistinctIds(source, target)
+const arrayDiffToCsv = (prevArray, currArray) => {
+  const { ids, columns, rows } = getDiffMetadata(prevArray, currArray)
+  // how null values should be handled
+  const replacer = (key, value) => (value === null ? '' : value)
+  const header = columns.join(',')
+
+  const csv = [
+    header,
+    ...rows.map(row => {
+      return Object.keys(row)
+        .map(field => {
+          return JSON.stringify(row[field].value, replacer)
+        })
+        .join(',')
+    })
+  ].join('\r\n')
+  return csv
+}
+
+const getDiffMetadata = (source, target) => {
+  // flattens the objects inside of prevArray and currArray
+  const sourceMap = source.length > 0 ? getFlattenedMap(source) : {}
+  const targetMap = target.length > 0 ? getFlattenedMap(target) : {}
+  // We want to have distinct set of ids that are used in both arrays
+  const ids = getDistinctIds(sourceMap, targetMap)
   // Create HTML Table with a column header which is a superset of all keys in all the objects in the currArray.
-  const columns = getTableColumnValues([...target.values()])
-  const rows = generateRows(source, target, columns, ids)
+  const columns = getTableColumnValues([...targetMap.values()])
+  const rows = generateRows(targetMap, targetMap, columns, ids)
   return {
-    ids,    
-    columns, 
+    ids,
+    columns,
     rows
   }
 }
@@ -35,7 +54,7 @@ const getDistinctIds = (source, target) => {
   return ids
 }
 
-const getFlattenedMap = (arr) => { 
+const getFlattenedMap = arr => {
   const flattenedArray = flattenArray(arr)
   const map = new Map(flattenedArray.map(object => [object._id, object]))
   return map
@@ -149,8 +168,7 @@ const generateHtmlTable = (columns, rows, ids) => {
 }
 
 const buildHtml = table => {
-  const header = 
-    `<head>
+  const header = `<head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Flattened Arrays To Table</title>
@@ -166,8 +184,8 @@ const buildHtml = table => {
         }
       </style>
     </head>`
-    
-  const html = 
+
+  const html =
     '<!DOCTYPE html>' +
     '<html><head>' +
     header +
@@ -214,8 +232,10 @@ const generateRows = (source, target, columns, ids) => {
     let row = {}
     columns.forEach(column => {
       row[column] = {
-        value: !target.get(id)?.[column] 
-          ? column !== '_id' ? 'DELETED': id
+        value: !target.get(id)?.[column]
+          ? column !== '_id'
+            ? 'DELETED'
+            : id
           : target.get(id)[column],
         changes: isChangedValue(source, target, column, id)
       }
@@ -268,5 +288,7 @@ const generateColorTable = () => {
 
 module.exports = {
   arrayDiffToHtmlTable,
+  arrayDiffToCsv,
+  getDiffMetadata,
   timed
 }
